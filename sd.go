@@ -9,8 +9,6 @@ import (
 	"os"
 )
 
-
-
 type MySheet struct {
 	SpreadsheetID string `json:"spreadsheetId"`
 	Properties    struct {
@@ -59,8 +57,6 @@ type MySheet struct {
 	SpreadsheetURL string `json:"spreadsheetUrl"`
 }
 
-
-
 func main() {
 	var gs_old_props, gs_new_props MySheet
 
@@ -71,7 +67,7 @@ func main() {
 	gs_old := "1WVDcBOCVJOGMqMiNBxUoWJVAhUkQhHQ4TJSoRP1V9DA"
 	gs_new := "1Cfwi9wlYSAIp69MmRqga1EAgAeCDh-T-Gb-LbIaf0Ss"
 
-	fmt.Printf("\nComparing sheet %s and %s",gs_old,gs_new)
+	fmt.Printf("\nComparing sheet %s and %s", gs_old, gs_new)
 
 	//get *sheets.Service from quickstart
 	service := qsmain()
@@ -94,14 +90,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to Unmarshall from sheet: %v", err)
 	}
-	_ = cmpSheetTitles(gs_old_props,gs_new_props)
+	_ = cmpSheetTitles(gs_old_props, gs_new_props)
 
-	old_content := getSheetContents(gs_old_props,service)
-	new_content := getSheetContents(gs_new_props,service)
+	old_content := getSheetContents(gs_old_props, service)
+	new_content := getSheetContents(gs_new_props, service)
 
 	dmp := diffmatchpatch.New()
-	for k,_ := range old_content {
-		fmt.Printf("\nINFO: Checking %s\n",k)
+	for k, _ := range old_content {
+		fmt.Printf("\nINFO: Checking %s\n", k)
 		diffs := dmp.DiffMain(old_content[k], new_content[k], true)
 		//fmt.Println(dmp.DiffPrettyHtml(diffs))
 
@@ -109,11 +105,9 @@ func main() {
 		//fmt.Println(dmp.DiffToDelta(diffs))
 	}
 
-
 }
 
-
-func getSheetContents (props MySheet, service *sheets.Service) map[string]string {
+func getSheetContents(props MySheet, service *sheets.Service) map[string]string {
 	contents := make(map[string]string)
 	valueRenderOption := "FORMULA"
 	for _, row := range props.Sheets {
@@ -124,7 +118,7 @@ func getSheetContents (props MySheet, service *sheets.Service) map[string]string
 		}
 		for _, brow := range resp.Values {
 			for _, col := range brow {
-				contents[this_title] += "'"+col.(string)+"',"
+				contents[this_title] += "'" + col.(string) + "',"
 			}
 			contents[this_title] += "\n"
 		}
@@ -134,31 +128,28 @@ func getSheetContents (props MySheet, service *sheets.Service) map[string]string
 
 //compares 2 spreadsheet's sheet titles and exits if they are not the same
 // and in the same order
-func cmpSheetTitles (old_props MySheet, new_props MySheet) bool {
+func cmpSheetTitles(old_props MySheet, new_props MySheet) bool {
 	var old_titles, new_titles []string
 
 	for _, row := range old_props.Sheets {
-		old_titles = append(old_titles,row.Properties.Title)
+		old_titles = append(old_titles, row.Properties.Title)
 	}
 	for i, row := range new_props.Sheets {
-		new_titles = append(new_titles,row.Properties.Title)
+		new_titles = append(new_titles, row.Properties.Title)
 		if row.Properties.Title != old_titles[i] {
-			fmt.Printf("\n%s != %s",row.Properties.Title,old_titles[i])
+			fmt.Printf("\n%s != %s", row.Properties.Title, old_titles[i])
 			os.Exit(1)
 			return false
 		}
-		fmt.Printf("\n%s Exists in both Spreadsheets",row.Properties.Title)
+		fmt.Printf("\n%s Exists in both Spreadsheets", row.Properties.Title)
 	}
 	if len(old_titles) != len(new_titles) {
 		fmt.Println("\nSpreadsheets have different number of Sheets")
-		fmt.Printf("\nThe old Spreadsheet has %d and the new %d",len(old_titles),len(new_titles))
+		fmt.Printf("\nThe old Spreadsheet has %d and the new %d", len(old_titles), len(new_titles))
 		os.Exit(1)
 		return false
 	}
 
-	fmt.Printf("\nINFO:%s","Sheets have the same titles")
+	fmt.Printf("\nINFO:%s", "Sheets have the same titles")
 	return true
 }
-
-
-
