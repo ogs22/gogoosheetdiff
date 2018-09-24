@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"google.golang.org/api/sheets/v4"
 	"io/ioutil"
@@ -13,7 +14,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-
+	"regexp"
 )
 
 type MySheet struct {
@@ -67,36 +68,49 @@ type MySheet struct {
 func main() {
 	var gs_old_props, gs_new_props MySheet
 
-	//the old spreadsheet id
-	//gs_old := "1qRyEu-NU1lAJWuQ1V4Q9PBF13DnqTZXIQsYkphedjqg"
-	//gs_new := "1gl6DFGuBM66bsb_bRno6PneITIJr7M9pEpdCtdmyCbI"
+	info := color.New(color.FgCyan).Add(color.Underline)
 
-	gs_old := "1WVDcBOCVJOGMqMiNBxUoWJVAhUkQhHQ4TJSoRP1V9DA"
-	gs_new := "1Cfwi9wlYSAIp69MmRqga1EAgAeCDh-T-Gb-LbIaf0Ss"
+	if len(os.Args) < 2 {
+		log.Printf("Usage %s SpreadSheetID_old SpreadSheetID_new", os.Args[0])
+		log.Fatalf("Incorrect command line args")
+	}
 
-	fmt.Printf("\nComparing sheet %s and %s", gs_old, gs_new)
+	gs_old := os.Args[1]
+	gs_new := os.Args[2]
+
+	var validID = regexp.MustCompile(`[a-zA-Z0-9-_]+`)
+
+	if validID.MatchString(gs_old) && validID.MatchString(gs_new) {
+		// ids are valid
+		info.Printf("\nComparing sheet %s and %s\n", gs_old, gs_new)
+	} else {
+		log.Fatalf("Input IDs not valid \n%s \n%s", gs_old ,gs_new)
+	}
+
+
 
 	//get *sheets.Service from quickstart
 	service := qsmain()
 	// get the props for the old sheets
 	sother_old, err := service.Spreadsheets.Get(gs_old).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+		log.Fatalf("\nUnable to retrieve data from spreadsheet\nID:%s: %v",gs_old, err)
 	}
 	tmp_old, err := sother_old.MarshalJSON()
 	err = json.Unmarshal(tmp_old, &gs_old_props)
 	if err != nil {
-		log.Fatalf("Unable to Unmarshall from sheet: %v", err)
+		log.Fatalf("\nUnable to Unmarshall from spreadsheet\nID:%s: %v",gs_old, err)
 	}
 	sother_new, err := service.Spreadsheets.Get(gs_new).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+		log.Fatalf("\nUnable to retrieve data from spreadsheet\nID:%s: %v",gs_new, err)
 	}
 	tmp_new, err := sother_new.MarshalJSON()
 	err = json.Unmarshal(tmp_new, &gs_new_props)
 	if err != nil {
-		log.Fatalf("Unable to Unmarshall from sheet: %v", err)
+		log.Fatalf("\nUnable to Unmarshall from spreadsheet\nID:%s: %v",gs_new, err)
 	}
+	info.Println("\nChecking Spreadsheets have the same number of sheets and sheet names")
 	_ = cmpSheetTitles(gs_old_props, gs_new_props)
 
 	old_content := getSheetContents(gs_old_props, service)
@@ -104,14 +118,10 @@ func main() {
 
 	dmp := diffmatchpatch.New()
 	for k, _ := range old_content {
-		fmt.Printf("\nINFO: Checking %s\n", k)
+		info.Printf("\nINFO: Checking %s\n", k)
 		diffs := dmp.DiffMain(old_content[k], new_content[k], true)
-		//fmt.Println(dmp.DiffPrettyHtml(diffs))
-
 		fmt.Println(dmp.DiffPrettyText(diffs))
-		//fmt.Println(dmp.DiffToDelta(diffs))
 	}
-
 }
 
 func getSheetContents(props MySheet, service *sheets.Service) map[string]string {
@@ -161,7 +171,7 @@ func cmpSheetTitles(old_props MySheet, new_props MySheet) bool {
 	return true
 }
 
-
+// From Google api quickstart https://github.com/gsuitedevs/go-samples/blob/master/sheets/quickstart/quickstart.go
 // Retrieve a token, saves the token, then returns the generated client.
 func getClient(config *oauth2.Config) *http.Client {
 	tokFile := "token.json"
