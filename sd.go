@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/sergi/go-diff/diffmatchpatch"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/sheets/v4"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"regexp"
 )
 
