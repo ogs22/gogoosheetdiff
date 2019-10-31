@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8" />
+</head><body>
+<h1>{{.Title}}</h1>
+<ul>
+{{range $i, $a := .Info}}
+    <li>{{$a}}</li>
+{{end}}
+</ul>
+<hr>{{.Output}}
+
+
+</body></html>
