@@ -70,6 +70,11 @@ type Results struct {
 	Gs_old	string
 	Gs_new string
 	Info []string
+	OutputMe []SheetOutput
+}
+
+type SheetOutput struct {
+	OutputHeader string
 	Output template.HTML
 }
 
@@ -81,6 +86,7 @@ func main() {
 func xmain(w http.ResponseWriter, r *http.Request) {
 	var gs_old_props, gs_new_props MySheet
 	var error string
+	//var cnt int
 
 	urlParts := strings.Split(r.URL.Path,"/")
 	fmt.Printf("len=%d cap=%d %v\n", len(urlParts), cap(urlParts), urlParts)
@@ -97,7 +103,6 @@ func xmain(w http.ResponseWriter, r *http.Request) {
 		Title:  "Comparsion of Google Sheets",
 		Gs_old: gs_old,
 		Gs_new: gs_new,
-		Output: "None",
 	}
 
 
@@ -150,8 +155,9 @@ func xmain(w http.ResponseWriter, r *http.Request) {
 	for k, _ := range old_content {
 		data.Info = append(data.Info , fmt.Sprintf("\nINFO: Checking %s\n", k))
 		diffs := dmp.DiffMain(old_content[k], new_content[k], true)
-		var htmloutput = fmt.Sprintf( "%s", dmp.DiffPrettyHtml(diffs))
-		data.Output = data.Output + template.HTML(htmloutput)
+		var htmloutput = strings.Replace(fmt.Sprintf( "%s", dmp.DiffPrettyHtml(diffs)),"&para;","",-1)
+		temp := SheetOutput{k,template.HTML(htmloutput)}
+		data.OutputMe = append(data.OutputMe,temp)
 	}
 	tmpl, err := template.ParseFiles("template.html")
 	tmpl.Execute(w, data)

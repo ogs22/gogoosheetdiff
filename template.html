@@ -1,13 +1,51 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8" />
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </head><body>
+
+<div class="container">
 <h1>{{.Title}}</h1>
 <ul>
 {{range $i, $a := .Info}}
     <li>{{$a}}</li>
 {{end}}
 </ul>
-<hr>{{.Output}}
+<hr>
+
+<script>$(function () {
+        $('#myTab a').on('click', function (e) {
+            e.preventDefault()
+            $(this).tab('show')
+        })
+    })
+
+</script>
 
 
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    {{$active:= "active"}}
+{{range $i, $x := .OutputMe}}
+    <li class="nav-item">
+        <a class="nav-link {{$active}}" id="i{{$i}}-tab" data-toggle="tab" href="#i{{$i}}" role="tab" aria-controls="i{{$i}}" aria-selected="true">{{.OutputHeader}}</a>
+    </li>
+    {{$active = ""}}
+{{end}}
+</ul>
+
+{{$activex:= "show active"}}
+<div class="tab-content" id="myTabContent">
+    {{range $i, $x := .OutputMe}}
+    <div class="tab-pane fade {{$activex}}" id="i{{$i}}" role="tabpanel" aria-labelledby="i{{$i}}-tab">{{.Output}}</div>
+    {{$activex = ""}}
+    {{end}}
+
+</div>
+
+
+
+</div>
 </body></html>
